@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:sleektask/Translations/locale_keys.dart';
+import 'package:sleektask/screens/register_screen.dart';
+import 'package:sleektask/utils/presentations/helpers.dart';
+import 'package:sleektask/utils/presentations/routes.dart';
 
 class LoginScreen extends StatefulWidget {
-  const LoginScreen({Key? key});
+  static const routeName = Routes.loginScreen;
+  const LoginScreen({
+    super.key,
+  });
 
   @override
   State<LoginScreen> createState() => _LoginScreenState();
@@ -10,6 +18,14 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
+  bool _showPassword = false;
+
+  void _togglevisibility() {
+    setState(() {
+      _showPassword = !_showPassword;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -18,24 +34,18 @@ class _LoginScreenState extends State<LoginScreen> {
           key: _formKey,
           child: Column(
             children: [
-              Image.asset(
-                'assets/images/Vector 55.png',
-                fit: BoxFit.cover,
-                scale: 0.8,
-                color: Colors.lightBlue,
+              SvgPicture.asset(
+                'assets/images/surakshaLogin.svg',
+                width: MediaQuery.of(context).size.width,
               ),
               Container(
                 color: Colors.white, // Replace with your desired color
                 child: Column(
                   children: [
-                    const Text(
-                      'Login to your account',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.orange,
-                      ),
+                    const SizedBox(
+                      height: 20,
                     ),
+                    buildLoginText(),
                     const SizedBox(
                       height: 40,
                     ),
@@ -74,6 +84,21 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
+  Widget buildLoginText() {
+    return Column(
+      children: [
+        Text(
+          LocaleKeys.login.translate(),
+          style: const TextStyle(
+            fontSize: 24,
+            fontWeight: FontWeight.w900,
+            color: Colors.orange,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget buildTextHead() {
     return const Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +131,6 @@ class _LoginScreenState extends State<LoginScreen> {
       child: TextFormField(
         keyboardType: TextInputType.number,
         inputFormatters: [
-          //FilteringTextInputFormatter.allow(RegExp(r'^[0-9]{0,10}$')),
           FilteringTextInputFormatter.digitsOnly,
           LengthLimitingTextInputFormatter(10),
         ],
@@ -134,13 +158,26 @@ class _LoginScreenState extends State<LoginScreen> {
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(color: Colors.lightBlue),
           ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(
+              color: Colors.red,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(
+              color: Colors.red,
+            ),
+          ),
+          prefixText: "+91",
           filled: true,
           fillColor: Colors.white,
           prefixIcon: const Icon(
             Icons.phone,
             color: Colors.blue,
           ),
-          hintText: '+91 9847362713',
+          hintText: 'Mobile Number',
         ),
       ),
     );
@@ -150,7 +187,7 @@ class _LoginScreenState extends State<LoginScreen> {
     return Padding(
       padding: const EdgeInsets.only(left: 20, right: 20),
       child: TextFormField(
-        obscureText: true,
+        obscureText: !_showPassword,
         validator: (value) {
           if (value == null || value.isEmpty) {
             return 'Please enter a password';
@@ -158,13 +195,14 @@ class _LoginScreenState extends State<LoginScreen> {
           if (value.length < 6) {
             return 'Password must be at least 6 characters';
           }
-          // You can add additional validation logic here if needed
+          if (!RegExp(r'[!@#$%^&*(),.?":{}|<>]').hasMatch(value)) {
+            return 'Password must contain at least one special character';
+          }
           return null;
         },
         onChanged: (value) {
           _formKey.currentState!.validate();
         },
-        // controller: passwordController,
         decoration: InputDecoration(
           isDense: true,
           enabledBorder: OutlineInputBorder(
@@ -175,11 +213,32 @@ class _LoginScreenState extends State<LoginScreen> {
             borderRadius: BorderRadius.circular(10.0),
             borderSide: const BorderSide(color: Colors.lightBlue),
           ),
+          errorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(
+              color: Colors.red,
+            ),
+          ),
+          focusedErrorBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(10),
+            borderSide: const BorderSide(
+              color: Colors.red,
+            ),
+          ),
           filled: true,
           fillColor: Colors.white,
           prefixIcon: const Icon(
             Icons.lock,
             color: Colors.blue,
+          ),
+          suffixIcon: GestureDetector(
+            onTap: () {
+              _togglevisibility();
+            },
+            child: Icon(
+              _showPassword ? Icons.visibility : Icons.visibility_off,
+              color: Colors.black,
+            ),
           ),
           hintText: 'Enter your password',
         ),
@@ -192,9 +251,9 @@ class _LoginScreenState extends State<LoginScreen> {
       width: MediaQuery.of(context).size.width * 0.4,
       child: TextButton(
         onPressed: () {
-          if (_formKey.currentState!.validate()) {
-            Navigator.pop(context);
-          }
+          // if (_formKey.currentState!.validate()) {
+            Navigator.pushNamed(context, RegisterScreen.routeName);
+          // }
         },
         style: ButtonStyle(
           backgroundColor: MaterialStateProperty.all<Color>(
@@ -239,8 +298,6 @@ class _LoginScreenState extends State<LoginScreen> {
       children: [
         CircleAvatar(
           radius: 23,
-          // foregroundImage:
-          //     Journey.photoList != null ? MemoryImage(Journey.photoList!) : null,
           backgroundColor: Colors.black,
           child: Icon(
             Icons.person,
@@ -248,13 +305,11 @@ class _LoginScreenState extends State<LoginScreen> {
             color: Colors.white,
           ),
         ),
-        const SizedBox(
+        SizedBox(
           width: 20,
         ),
         CircleAvatar(
           radius: 23,
-          // foregroundImage:
-          //     Journey.photoList != null ? MemoryImage(Journey.photoList!) : null,
           backgroundColor: Colors.black,
           child: Icon(
             Icons.face,

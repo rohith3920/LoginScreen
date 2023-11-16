@@ -1,39 +1,46 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:sleektask/loginScreen.dart';
+import 'package:provider/provider.dart';
+import 'package:sleektask/app.dart';
+import 'package:sleektask/providers/app_settings_provider.dart';
 
-void main() {
-  runApp(const MyApp());
-}
+import 'package:sleektask/utils/presentations/easy_localization.dart';
+import 'package:sleektask/utils/presentations/get_it.dart';
+import 'package:sleektask/utils/presentations/setup.dart';
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  // This widget is the root of your application.
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a blue toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const LoginScreen(),
-    );
-  }
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await EasyLocalizationProvider().ensureInitialized();
+  await setupResources();
+  runZonedGuarded<Future<void>>(
+    () async {
+      runApp(
+        getSingleton<EasyLocalizationProvider>().easyLocalization(
+          path: 'assets/Translations',
+          supportedLocales: [const Locale('en', '')],
+          child: MultiProvider(
+            providers: [
+              ChangeNotifierProvider(
+                  create: (_) => AppSettingsProvider()..setup()),
+            ],
+            child: const App(),
+          ),
+        ),
+      );
+    },
+    // ignore: no-empty-block
+    (Object error, StackTrace stack) {
+      // logES(error, stack);
+    },
+    // zoneSpecification: ZoneSpecification(
+    //   // Intercept all print calls
+    //   print: (self, parent, zone, line) async {
+    //     // Include a timestamp and the name of the App
+    //     final messageToLog = "[${DateTime.now()}] $line $zone";
+    //     // privacy prohibited stuff
+    //     parent.print(zone, messageToLog);
+    //   },
+    // ),
+  );
 }
